@@ -7,11 +7,22 @@ authors = [
     { name = "keanutoofa", email = "keanu.toofa@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "argparse>=1.4.0",
+    "pygame>=2.6.1",
+]
 
 [project.scripts]
-hands-on-monte-carlo-simulation = "hands_on_monte_carlo_simulation.main:main"
+monte-carlo-simulation = "hands_on_monte_carlo_simulation.main:main"
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "coverage>=7.13.2",
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "ruff>=0.14.14",
+]
