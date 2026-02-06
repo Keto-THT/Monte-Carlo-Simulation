@@ -14,6 +14,7 @@ dependencies = [
 
 [project.scripts]
 monte-carlo-simulation = "hands_on_monte_carlo_simulation.main:main"
+quadrant = "hands_on_monte_carlo_simulation.quadrant_circle:draw_quadrant_circle"
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]

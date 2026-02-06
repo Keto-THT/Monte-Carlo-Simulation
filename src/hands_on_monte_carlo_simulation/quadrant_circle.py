@@ -4,11 +4,10 @@ def draw_quadrant_circle(screen, color, line_width):
     """
     Draw the top-right quadrant circle
 
-    Arguments 
+    Args:  
         screen : 
         color : 
         line_width : 
-
     """
     width, height = screen.get_size()
     radius = height
