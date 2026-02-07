@@ -75,6 +75,80 @@ class MonteCarloThread(threading.Thread):
             # Mode non-GUI : génère tous les points en batch en une fois et stocke les résultats dans le conteneur
             else:
                 points, inside = self.generator.generate_points_with_details(self.nb_draws)
-                
+
                 if self.result_container is not None:
                     self.result_container.add_points_data(points)
+    
+class ThreadingManager:
+    """
+    Gestionnaire de threads pour la simulation Monte Carlo
+    """
+
+    def __init__(self, nb_threads: int, nb_draws: int, seed: int = None):
+        """
+        Initialise le gestionnaire de threads
+
+        Args:
+            nb_threads (int): Le nombre de threads à exécuter
+            nb_draws (int): Le nombre de tirages à effectuer pour chaque thread
+            seed (int, optional): La graine pour le générateur de nombres aléatoires - pour la reproductibilité. Defaults to None.
+        """
+        self.nb_threads = nb_threads
+        self.nb_draws = nb_draws
+        self.seed = seed
+        self.threads: List[MonteCarloThread] = []
+        self.results: List[ThreadResult] = []
+
+    def run_parallel(self, callback: callable = None):
+        """
+        Exécute les threads en parallèle et collecte les résultats
+
+        Args:
+            callback (callable, optional): Une fonction de rappel à appeler avec les résultats de chaque thread pour l'affichage GUI. Defaults to None.
+        
+        Returns:
+            Tuple (total_points, inside_points) 
+        """
+        self.threads = []
+        self.results = []
+
+        #Création des threads
+        for i in range(self.nb_threads):
+            result_container = ThreadResult()
+            self.results.append(result_container)
+
+            thread = MonteCarloThread(
+                thread_id=i, 
+                nb_draws= self.nb_draws,
+                seed=self.seed,
+                callback=callback,
+                result_container=result_container
+                )
+            self.threads.append(thread)
+
+            #Démarrage des threads
+            for thread in self.threads:
+                thread.start()
+
+            #Attente de la fin de tous les threads
+            for thread in self.threads:
+                thread.join()
+
+            #Calcul des résultats totaux
+            total_points = sum(result.total_points for result in self.results)
+            inside_points = sum(result.inside_points for result in self.results)
+
+            return total_points, inside_points
+
+    def get_points_data(self) -> List[Tuple[float, float, bool]]:
+        """
+        Récupère les détails de tous les points générés par tous les threads pour l'affichage GUI
+
+        Returns:
+            List[Tuple[float, float, bool]]: Liste de tuples contenant les coordonnées et si le point est à l'intérieur du cercle
+        """
+        all_points_data = []
+        for result in self.results:
+            all_points_data.extend(result.points_data)
+        
+        return all_points_data
