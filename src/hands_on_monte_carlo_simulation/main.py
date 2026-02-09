@@ -1,13 +1,7 @@
 import sys
 import logging
 from .parser import parse_arguments
-from .Simulation import SimulationUI
-from .threading_manager import ThreadingManager
-from .monte_carlo import MonteCarloCalculator
-
-
-
-
+from .logger_runner import setup_logging, run_gui_mode, run_cli_mode
 
 def main() -> None:
     """
@@ -47,6 +41,3 @@ def main() -> None:
         logging.error(f"Erreur lors de l'exécution: {e}", exc_info=True)
         sys.exit(1)
 
-
-if __name__ == "__main__":
-    main()

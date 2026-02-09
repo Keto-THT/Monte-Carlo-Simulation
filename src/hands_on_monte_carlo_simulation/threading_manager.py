@@ -28,7 +28,7 @@ class MonteCarloThread(threading.Thread):
     Classe de threading pour exécuter la simulation de Monte Carlo en parallèle
     """
 
-    def __init__(self, thread_id: int, nb_draws: int, seed: int = None, callback: callable = None, result_container: ThreadingResult = None):
+    def __init__(self, thread_id: int, nb_draws: int, seed: int = None, callback: callable = None, result_container: ThreadResult = None):
         """
         Initialise le thread
 
