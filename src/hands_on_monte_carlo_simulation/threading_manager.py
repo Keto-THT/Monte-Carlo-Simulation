@@ -1,15 +1,15 @@
 import threading
 import random 
 from typing import List, Tuple 
-from .monte_carlo_simulation import MonteCarloSimulation
+from .monte_carlo_simulation import MonteCarloSimulation, PointGenerator
 
 class ThreadResult:
     """
     Classe pour stocker les résultats d'un thread
     """
-    def __init__(self, total_points: int, inside_points: int):
-        self.total_points = total_points
-        self.inside_points = inside_points
+    def __init__(self):
+        self.total_points = 0
+        self.inside_points = 0
         self.points_data = []  # Pour stocker les détails des points pour le GUI
 
     def add_points_data(self, points: List[Tuple[float, float, bool]]):
@@ -46,7 +46,7 @@ class MonteCarloThread(threading.Thread):
         self.callback = callback
         self.result_container = result_container
 
-        #génération d'une graine unique pour ce thread
+        # Génération d'une graine unique pour ce thread
         if seed is not None:
             self.seed = seed + thread_id
         else:
@@ -54,47 +54,47 @@ class MonteCarloThread(threading.Thread):
         
         self.generator = PointGenerator(self.seed)
 
-        def run(self):
-            """
-            Exécute la génération de points pour ce thread et stocke les résultats 
-            """
+    def run(self):
+        """
+        Exécute la génération de points pour ce thread et stocke les résultats 
+        """
 
-            # Mode GUI : génère les points un par un et utilise le callback pour l'affichage
-            if self.callback is not None:
-                for _ in range(self.nb_draws):
-                    points, inside = self.generator.generate_points_with_details(1)  # Génère un point à la fois pour le GUI
-                    if points : 
-                        x, y, is_inside = points[0]
-                        self.callback(x, y, is_inside)
+        # Mode GUI : génère les points un par un et utilise le callback pour l'affichage
+        if self.callback is not None:
+            for _ in range(self.nb_draws):
+                points, inside = self.generator.generate_points_with_details(1)  # Génère un point à la fois pour le GUI
+                if points: 
+                    x, y, is_inside = points[0]
+                    self.callback(x, y, is_inside)
 
-                        if self.result_container is not None:
-                            self.result_container.total_points += 1
-                            if is_inside: 
-                                self.result_container.inside_points += 1
-            
-            # Mode non-GUI : génère tous les points en batch en une fois et stocke les résultats dans le conteneur
-            else:
-                points, inside = self.generator.generate_points_with_details(self.nb_draws)
+                    if self.result_container is not None:
+                        self.result_container.total_points += 1
+                        if is_inside: 
+                            self.result_container.inside_points += 1
+        
+        # Mode non-GUI : génère tous les points en batch en une fois et stocke les résultats dans le conteneur
+        else:
+            points, inside = self.generator.generate_points_with_details(self.nb_draws)
 
-                if self.result_container is not None:
-                    self.result_container.add_points_data(points)
+            if self.result_container is not None:
+                self.result_container.add_points_data(points)
     
 class ThreadingManager:
     """
     Gestionnaire de threads pour la simulation Monte Carlo
     """
 
-    def __init__(self, nb_threads: int, nb_draws: int, seed: int = None):
+    def __init__(self, nb_threads: int, nb_draws_per_thread: int, seed: int = None):
         """
         Initialise le gestionnaire de threads
 
         Args:
             nb_threads (int): Le nombre de threads à exécuter
-            nb_draws (int): Le nombre de tirages à effectuer pour chaque thread
+            nb_draws_per_thread (int): Le nombre de tirages à effectuer pour chaque thread
             seed (int, optional): La graine pour le générateur de nombres aléatoires - pour la reproductibilité. Defaults to None.
         """
         self.nb_threads = nb_threads
-        self.nb_draws = nb_draws
+        self.nb_draws_per_thread = nb_draws_per_thread
         self.seed = seed
         self.threads: List[MonteCarloThread] = []
         self.results: List[ThreadResult] = []
@@ -112,33 +112,33 @@ class ThreadingManager:
         self.threads = []
         self.results = []
 
-        #Création des threads
+        # Création des threads
         for i in range(self.nb_threads):
             result_container = ThreadResult()
             self.results.append(result_container)
 
             thread = MonteCarloThread(
                 thread_id=i, 
-                nb_draws= self.nb_draws,
+                nb_draws=self.nb_draws_per_thread,
                 seed=self.seed,
                 callback=callback,
                 result_container=result_container
-                )
+            )
             self.threads.append(thread)
 
-            #Démarrage des threads
-            for thread in self.threads:
-                thread.start()
+        # Démarrage des threads
+        for thread in self.threads:
+            thread.start()
 
-            #Attente de la fin de tous les threads
-            for thread in self.threads:
-                thread.join()
+        # Attente de la fin de tous les threads
+        for thread in self.threads:
+            thread.join()
 
-            #Calcul des résultats totaux
-            total_points = sum(result.total_points for result in self.results)
-            inside_points = sum(result.inside_points for result in self.results)
+        # Calcul des résultats totaux
+        total_points = sum(result.total_points for result in self.results)
+        inside_points = sum(result.inside_points for result in self.results)
 
-            return total_points, inside_points
+        return total_points, inside_points
 
     def get_points_data(self) -> List[Tuple[float, float, bool]]:
         """
