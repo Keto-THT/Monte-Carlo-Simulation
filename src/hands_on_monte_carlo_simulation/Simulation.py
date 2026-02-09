@@ -1,5 +1,6 @@
 import pygame
 import threading
+import math
 
 
 class SimulationUI:
@@ -17,6 +18,9 @@ class SimulationUI:
         self.total_points = 0
         self.inside_points = 0
         self.lock = threading.Lock()  # Pour synchroniser l'accès aux stats
+        
+        # Liste pour sauvegarder tous les points à afficher
+        self.points_to_draw = []  # Liste de (x, y, color)
         
         # Initialisation Pygame
         pygame.init()
@@ -39,20 +43,45 @@ class SimulationUI:
 
     def draw_quadrant_circle(self, line_width: int = 3):
         """
-        Draw the top-right quadrant circle.
+        Dessine le quadrant supérieur droit d'un cercle unitaire.
+        
+        Le quadrant est centré au coin inférieur gauche (0, height).
+        Le rayon est égal à min(width, height) pour s'assurer qu'il reste dans l'écran.
         """
-        # On récupère les dimensions depuis l'instance
         width = self.width
         height = self.height
-        radius = height
-        center = (0, height)
-
-        # Dessin du cercle (Outline)
-        pygame.draw.circle(self.screen, self.circle_color, center, radius, width=line_width)
-
-        # Dessin des contours (Axes)
-        pygame.draw.line(self.screen, self.circle_color, (0, height), (0, 0), width=line_width)  # Vertical
-        pygame.draw.line(self.screen, self.circle_color, (0, height), (width, height), width=line_width)  # Horizontal
+        
+        #Fix : Utiliser le minimum pour que le cercle tienne dans l'écran
+        radius = min(width, height)
+        center_x = 0
+        center_y = height
+        
+        
+        
+        num_segments = 100  # Nombre de segments pour l'arc
+        points = []
+        
+        # Générer les points de l'arc (de -90° à 0°)
+        for i in range(num_segments + 1):
+            angle = -math.pi / 2 + (i / num_segments) * (math.pi / 2)
+            x = center_x + radius * math.cos(angle)
+            y = center_y + radius * math.sin(angle)
+            points.append((x, y))
+        
+        # Dessiner l'arc avec pygame.draw.lines
+        if len(points) > 1:
+            pygame.draw.lines(self.screen, self.circle_color, False, points, line_width)
+        
+        # Dessin des axes (contours du quadrant)
+        # Axe vertical (Y) - de bas en haut
+        pygame.draw.line(self.screen, self.circle_color, 
+                        (center_x, center_y), (center_x, center_y - radius), 
+                        width=line_width)
+        
+        # Axe horizontal (X) - de gauche à droite
+        pygame.draw.line(self.screen, self.circle_color, 
+                        (center_x, center_y), (center_x + radius, center_y), 
+                        width=line_width)
 
     def draw_statistics(self):
         """
@@ -89,6 +118,15 @@ class SimulationUI:
         self.screen.blit(inside_text, (10, stats_y + 25))
         self.screen.blit(pi_text, (10, stats_y + 50))
 
+    def draw_all_points(self):
+        """
+        Dessine tous les points sauvegardés
+        """
+        with self.lock:
+            for x, y, color in self.points_to_draw:
+                pixel_pos = self.math_to_screen(x, y)
+                pygame.draw.circle(self.screen, color, pixel_pos, 2)
+
     def update(self):
         """
         Opérations sur l'écran d'affichage
@@ -97,8 +135,11 @@ class SimulationUI:
         # Nettoyage
         self.screen.fill(self.bg_color)
         
-        # Dessin du quadrant
+        # Dessin du quadrant (arc + axes)
         self.draw_quadrant_circle(line_width=3)
+        
+        # Dessiner tous les points
+        self.draw_all_points()
         
         # Affichage des statistiques
         self.draw_statistics()
@@ -114,11 +155,24 @@ class SimulationUI:
 
     def math_to_screen(self, x: float, y: float):
         """
-        Transforme un point mathématique en coordonnées pixels (ex: 400, 300).
-        Domaine mathématique [0, 1]
+        Transforme un point mathématique en coordonnées pixels.
+        
+        Coordonnées mathématiques : (0, 0) = coin inférieur gauche, (1, 1) = coin supérieur droit
+        Coordonnées écran : (0, 0) = coin supérieur gauche, (width, height) = coin inférieur droit
+        
+        On doit utiliser min(width, height) pour scaler correctement.
+        
+        Args:
+            x: Coordonnée x mathématique dans [0, 1]
+            y: Coordonnée y mathématique dans [0, 1]
+            
+        Returns:
+            Tuple (screen_x, screen_y) en pixels
         """
-        screen_x = int(x * self.width)
-        screen_y = int(self.height - (y * self.height))
+        #Fix: Utiliser min(width, height) pour le scaling
+        scale = min(self.width, self.height)
+        screen_x = int(x * scale)
+        screen_y = int(self.height - (y * scale))  # Inversion Y
         return (screen_x, screen_y)
     
     def draw_point(self, x: float, y: float, color: str, radius: int = 2):
@@ -144,16 +198,16 @@ class SimulationUI:
             y: Coordonnée y
             is_inside: True si le point est dans le quadrant
         """
+        # Choix de la couleur
+        color = (0, 255, 0) if is_inside else (255, 0, 0)  # Vert ou Rouge
+        
         with self.lock:
             self.total_points += 1
             if is_inside:
                 self.inside_points += 1
-        
-        # Choix de la couleur
-        color = (0, 255, 0) if is_inside else (255, 0, 0)  # Vert ou Rouge
-        
-        # Dessin du point
-        self.draw_point(x, y, color, radius=2)
+            
+            # Sauvegarder le point pour le redessiner à chaque frame
+            self.points_to_draw.append((x, y, color))
         
     def reset_statistics(self):
         """
@@ -162,3 +216,4 @@ class SimulationUI:
         with self.lock:
             self.total_points = 0
             self.inside_points = 0
+            self.points_to_draw = []

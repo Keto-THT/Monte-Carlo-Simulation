@@ -21,9 +21,9 @@ class MonteCarloSimulation:
         
     
     @staticmethod
-    def generate_random_points() -> Tuple [float, float]:
+    def generate_random_points() -> Tuple[float, float]:
         """
-        Génère un point aléatoire dans le carrée de côté 1
+        Génère un point aléatoire dans le carré de côté 1
         """
         x = random.uniform(0, 1)
         y = random.uniform(0, 1)
@@ -52,7 +52,7 @@ class MonteCarloSimulation:
 
         Returns:
             Tuple qui contient la liste des points avec leur statut, et le nombre de points dans le quadrant
-            Format : ([x1, y1, is_inside), ...], count_inside)])
+            Format : ([(x1, y1, is_inside), ...], count_inside)
         """
         points = []
         count_inside = 0
@@ -68,7 +68,7 @@ class MonteCarloSimulation:
         return (points, count_inside)
     
     @staticmethod
-    def calculate_pi(total_points: int, count_inside: int,) -> float:
+    def estimate_pi(total_points: int, count_inside: int) -> float:
         """
         Calcule l'approximation de pi à partir du nombre total de points et du nombre de points dans le quadrant
 
@@ -85,7 +85,8 @@ class MonteCarloSimulation:
         ratio = count_inside / total_points
         return 4.0 * ratio
 
-class PointGenerator : 
+
+class PointGenerator: 
     """
     Classe pour générer les points en utilisant le threading
     """
@@ -107,7 +108,7 @@ class PointGenerator :
         Génère un échantillon de n points et retourne les statistiques
 
         Args:
-            n (int): Nombre de point à générer
+            n (int): Nombre de points à générer
         
         Returns:
             Tuple de la forme (total_points, inside_points)
@@ -122,15 +123,9 @@ class PointGenerator :
         Génère un échantillon de n points et retourne les détails de chaque point pour l'affichage GUI
 
         Args:
-            n (int): Nombre de point à générer
+            n (int): Nombre de points à générer
         
         Returns:
             Tuple de la forme ([(x1, y1, is_inside), ...], inside_points)
         """
         return self.calculator.generate_point(n)
-
-        
-
-
-    
-    
