@@ -51,7 +51,6 @@ class SimulationUI:
         width = self.width
         height = self.height
         
-        #Fix : Utiliser le minimum pour que le cercle tienne dans l'écran
         radius = min(width, height)
         center_x = 0
         center_y = height
@@ -169,7 +168,6 @@ class SimulationUI:
         Returns:
             Tuple (screen_x, screen_y) en pixels
         """
-        #Fix: Utiliser min(width, height) pour le scaling
         scale = min(self.width, self.height)
         screen_x = int(x * scale)
         screen_y = int(self.height - (y * scale))  # Inversion Y

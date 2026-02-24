@@ -1,7 +1,6 @@
 import threading
-import random 
 from typing import List, Tuple 
-from .monte_carlo_simulation import MonteCarloSimulation, PointGenerator
+from .monte_carlo_simulation import PointGenerator
 
 class ThreadResult:
     """
