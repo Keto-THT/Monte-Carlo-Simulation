@@ -1,5 +1,5 @@
 import threading
-from typing import List, Tuple 
+from typing import List, Tuple, Callable
 from .monte_carlo_simulation import PointGenerator
 
 class ThreadResult:
@@ -27,7 +27,7 @@ class MonteCarloThread(threading.Thread):
     Classe de threading pour exécuter la simulation de Monte Carlo en parallèle
     """
 
-    def __init__(self, thread_id: int, nb_draws: int, seed: int = None, callback: callable = None, result_container: ThreadResult = None):
+    def __init__(self, thread_id: int, nb_draws: int, seed: int, result_container: ThreadResult, callback: Callable):
         """
         Initialise le thread
 
@@ -83,7 +83,7 @@ class ThreadingManager:
     Gestionnaire de threads pour la simulation Monte Carlo
     """
 
-    def __init__(self, nb_threads: int, nb_draws_per_thread: int, seed: int = None):
+    def __init__(self, nb_threads: int, nb_draws_per_thread: int, seed: int):
         """
         Initialise le gestionnaire de threads
 
@@ -98,7 +98,7 @@ class ThreadingManager:
         self.threads: List[MonteCarloThread] = []
         self.results: List[ThreadResult] = []
 
-    def run_parallel(self, callback: callable = None):
+    def run_parallel(self, callback: Callable):
         """
         Exécute les threads en parallèle et collecte les résultats
 
