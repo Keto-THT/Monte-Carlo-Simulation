@@ -20,7 +20,7 @@ class SimulationUI:
         self.lock = threading.Lock()  # Pour synchroniser l'accès aux stats
         
         # Liste pour sauvegarder tous les points à afficher
-        self.points_to_draw = []  # Liste de (x, y, color)
+        #self.points_to_draw = []  # Liste de (x, y, color)
         
         # Initialisation Pygame
         pygame.init()

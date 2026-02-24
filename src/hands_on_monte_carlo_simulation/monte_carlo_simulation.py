@@ -7,7 +7,7 @@ class MonteCarloSimulation:
     Classe pour effectuer les calculs Monte Carlo pour l'approximation de pi
     """
 
-    def __init__(self, seed: int = None):
+    def __init__(self, seed: int):
         """
         Initialise la classe MonteCarloSimulation
 
@@ -90,7 +90,7 @@ class PointGenerator:
     Classe pour générer les points en utilisant le threading
     """
 
-    def __init__(self, seed: int = None):
+    def __init__(self, seed: int):
         """
         Initialise le générateur
 
