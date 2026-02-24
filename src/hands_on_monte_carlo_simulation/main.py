@@ -27,8 +27,6 @@ def main() -> None:
     # Exécution selon le mode
     try:
         if args.gui:
-            # Import pygame seulement si nécessaire
-            import pygame
             run_gui_mode(args)
         else:
             run_cli_mode(args)
