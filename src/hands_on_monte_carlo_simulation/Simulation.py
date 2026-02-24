@@ -18,8 +18,8 @@ class SimulationUI:
         self.inside_points = 0
         self.lock = threading.Lock()
 
-        # ✅ CORRECTION : initialisé ici (était commenté → crash dans draw_all_points)
-        self.points_to_draw = []  # Liste de (x, y, color)
+        
+        self.points_to_draw : list = []  # Liste de (x, y, color)
 
         # Initialisation Pygame
         pygame.init()
