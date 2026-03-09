@@ -42,6 +42,24 @@ class MonteCarloSimulation:
         """
         return (x * x + y * y) <= 1
     
+    def count_inside(self, n: int) -> int:
+        """
+        Génère n points et retourne uniquement le nombre de points dans le quadrant,
+        sans stocker les coordonnées.
+
+        Args:
+            n (int): Le nombre de points à générer
+
+        Returns:
+            int: Le nombre de points dans le quadrant
+        """
+        count_inside = 0
+        for _ in range(n):
+            x, y = self.generate_random_points()
+            if self.is_in_quadrant(x, y):
+                count_inside += 1
+        return count_inside
+
     def generate_point(self, n: int) -> Tuple[List[Tuple[float, float, bool]], int]:
         """
         Génère n points aléatoires dans le carré de côté 1 et compte ceux qui sont dans le quadrant
@@ -104,7 +122,8 @@ class PointGenerator:
     
     def generate_batch(self, n: int) -> Tuple[int, int]:
         """
-        Génère un échantillon de n points et retourne les statistiques
+        Génère un échantillon de n points et retourne uniquement les statistiques,
+        sans stocker les coordonnées (utilisation mémoire constante).
 
         Args:
             n (int): Nombre de points à générer
@@ -112,9 +131,7 @@ class PointGenerator:
         Returns:
             Tuple de la forme (total_points, inside_points)
         """
-
-        points, inside_points = self.calculator.generate_point(n)
-
+        inside_points = self.calculator.count_inside(n)
         return (n, inside_points)
     
     def generate_points_with_details(self, n: int) -> Tuple[List[Tuple[float, float, bool]], int]:
