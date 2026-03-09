@@ -4,17 +4,11 @@ from .monte_carlo_simulation import PointGenerator
 
 class ThreadResult:
     """
-    Classe pour stocker les résultats d'un thread
+    Classe pour stocker les résultats d'un thread (compteurs uniquement)
     """
     def __init__(self):
         self.total_points = 0
         self.inside_points = 0
-        self.points_data = []
-
-    def add_points_data(self, points: List[Tuple[float, float, bool]]):
-        self.points_data.extend(points)
-        self.total_points += len(points)
-        self.inside_points += sum(1 for _, _, is_inside in points if is_inside)
 
 
 class MonteCarloThread(threading.Thread):
@@ -45,10 +39,11 @@ class MonteCarloThread(threading.Thread):
                         if is_inside:
                             self.result_container.inside_points += 1
         else:
-            # Mode CLI : batch
-            points, inside = self.generator.generate_points_with_details(self.nb_draws)
+            # Mode CLI : comptage uniquement, aucun stockage des coordonnées
+            total, inside = self.generator.generate_batch(self.nb_draws)
             if self.result_container is not None:
-                self.result_container.add_points_data(points)
+                self.result_container.total_points += total
+                self.result_container.inside_points += inside
 
 
 class ThreadingManager:
@@ -99,9 +94,3 @@ class ThreadingManager:
         inside_points = sum(result.inside_points for result in self.results)
 
         return total_points, inside_points
-
-    def get_points_data(self) -> List[Tuple[float, float, bool]]:
-        all_points_data = []
-        for result in self.results:
-            all_points_data.extend(result.points_data)
-        return all_points_data
